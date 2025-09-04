@@ -1,5 +1,11 @@
 export default [
   {
+    "date": "04/09/2025",
+    "changes": [
+      "Added the 'Slap Slap Pop' minigame animations."
+    ]
+  },
+  {
     "date": "28/08/2025",
     "changes": [
       "Added Rubia: Maid Bikini character icon.",

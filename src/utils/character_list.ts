@@ -1113,6 +1113,13 @@ export default {
     "spine": "char067603",
     "cutscene": "cutscene_char067603",
     "dating": "illust_dating6"
+  },
+  "minigame1": {
+    "charName": "Minigame",
+    "costumeName": "Slap Slap Pop",
+    "spine": "RhythmHitAnim",
+    "cutscene": "",
+    "dating": ""
   }
 } as { [key: string]: {
   charName: string,
