@@ -1,5 +1,12 @@
 export default [
   {
+    "date": "02/10/2025",
+    "changes": [
+      "Added Darian: Prophetic Dream character icon.",
+      "Added Darian: Prophetic Dream standing and ultimate animations.",
+    ]
+  },
+  {
     "date": "25/09/2025",
     "changes": [
       "Added Tyr: Starlight Guardian character icon.",

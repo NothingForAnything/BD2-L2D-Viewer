@@ -659,6 +659,13 @@ export default {
     "cutscene": "cutscene_char003901",
     "dating": ""
   },
+  "004001": {
+    "charName": "Darian",
+    "costumeName": "Prophetic Dream",
+    "spine": "char004001",
+    "cutscene": "cutscene_char004001",
+    "dating": ""
+  },
   "004101": {
     "charName": "Tyr",
     "costumeName": "Starlight Guardian",
