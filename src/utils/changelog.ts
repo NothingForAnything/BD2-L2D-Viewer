@@ -1,5 +1,16 @@
 export default [
   {
+    "date": "23/10/2025",
+    "changes": [
+      "Added the long awaited ability to upload a custom background image and be able to edit it!",
+      "Added Granhildr: Boo Ghost and Sonya: Little Pumpkin Girl character icon.",
+      "Added Granhildr: Boo Ghost and Sonya: Little Pumpkin Girl standing and ultimate animations.",
+      "Added Angelica: Neon Savior fated guest animations.",
+      "Added smart skin selection to select a skin with content if the default one is empty (Happens with Angelica: Neon Savior fated guest skins).",
+      "As always, if you like my work and want to support me so I can keep working on adding more features and improving the site you can do so by clicking in the coffee icon in the navigation bar."
+    ]
+  },
+  {
     "date": "02/10/2025",
     "changes": [
       "Added Darian: Prophetic Dream character icon.",

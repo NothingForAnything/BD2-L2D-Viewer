@@ -1,6 +1,11 @@
 <template>
   <div class="bg-gray-900 text-white h-dvh max-h-dvh flex flex-col">
-    <Navbar />
+    <Navbar
+      :has-custom-background="hasCustomBackground"
+      @mobile-menu="onNavMobileMenu"
+      @upload-bg="onCustomBgUpload"
+      @overlay-active="onNavbarOverlayActive"
+    />
     <div class="flex flex-1 flex-col lg:flex-row h-full min-h-0 overflow-hidden">
       <div class="order-1 lg:order-none hidden lg:flex flex-col min-h-0">
         <AnimationSidebar
@@ -17,15 +22,15 @@
         />
       </div>
       <main class="relative flex-1 p-2 overflow-hidden">
-        <div class="absolute top-2 left-2 lg:hidden z-10 flex items-center gap-2">
-          <button class="p-2" @click="showMobileControls = true">
+        <div class="absolute top-2 left-2 lg:hidden z-50 flex items-center gap-2">
+          <button v-show="!overlayActive" class="p-2" @click="showMobileControls = true">
             <MenuIcon />
           </button>
-          <button v-show="!showMobileControls" class="p-2" @click="onResetCamera">
+          <button v-show="!overlayActive" class="p-2" @click="onResetCamera">
             <CameraResetIcon />
           </button>
           <button
-            v-show="!showMobileControls"
+            v-show="!overlayActive"
             class="p-2"
             @click="store.playing = !store.playing"
           >
@@ -33,29 +38,34 @@
             <PlayIcon v-else />
           </button>
           <select
-            v-show="!showMobileControls"
+            v-show="!overlayActive"
             v-model="store.selectedSkin"
             class="bg-gray-700 text-white"
           >
             <option v-for="skin in skins" :key="skin" :value="skin">{{ skin }}</option>
           </select>
           <select
-            v-show="!showMobileControls"
+            v-show="!overlayActive"
             v-model="store.selectedAnimation"
             class="bg-gray-700 text-white"
           >
             <option v-for="name in animations" :key="name" :value="name">{{ name }}</option>
           </select>
         </div>
-        <div class="absolute top-14 left-4 lg:hidden z-10">
+        <div class="absolute top-14 left-4 lg:hidden z-50">
           <button
-            v-show="!showMobileControls && store.characters.find(c => c.id === store.selectedCharacterId)?.datingHasNoBg && store.animationCategory === 'dating'"
+            v-show="!overlayActive && store.characters.find(c => c.id === store.selectedCharacterId)?.datingHasNoBg && store.animationCategory === 'dating'"
             @click="store.showDatingBg = !store.showDatingBg"
           >
             <BgToggleIcon :active="store.showDatingBg" />
           </button>
         </div>
-        <SpineViewer ref="viewerRef" @animations="animations = $event" @skins="skins = $event" />
+        <SpineViewer
+          ref="viewerRef"
+          :mobile-overlay-active="overlayActive"
+          @animations="animations = $event"
+          @skins="skins = $event"
+        />
       </main>
       <div class="hidden lg:flex flex-col min-h-0">
         <CharacterSidebar
@@ -100,7 +110,7 @@ import Navbar from '@/components/Navbar.vue'
 import CharacterSidebar from '@/components/CharacterSideBar.vue'
 import AnimationSidebar from '@/components/AnimationSideBar.vue'
 import SpineViewer from '@/components/SpineViewer.vue'
-import { ref, watchEffect } from 'vue'
+import { ref, watchEffect, computed } from 'vue'
 import { useCharacterStore } from '@/stores/characterStore'
 import { buildUrl } from './utils/urlSync'
 
@@ -118,6 +128,12 @@ const viewerRef = ref<InstanceType<typeof SpineViewer> | null>(null)
 const isExporting = ref(false)
 const isScreenshotting = ref(false)
 const showMobileControls = ref(false)
+const navMobileMenuOpen = ref(false)
+const navbarOverlayActive = ref(false)
+const overlayActive = computed(
+  () => showMobileControls.value || navMobileMenuOpen.value || navbarOverlayActive.value,
+)
+const hasCustomBackground = computed(() => !!store.customBackgroundImage)
 
 function onSelectCharacter(id: string) {
   if (id === store.selectedCharacterId) return
@@ -161,6 +177,21 @@ async function onExportAnimation({ format, transparent }: { format: 'video' | 'f
 
 function onCategoryChange() {
   showMobileControls.value = false;
+}
+
+function onNavMobileMenu(open: boolean) {
+  navMobileMenuOpen.value = open
+}
+
+function onCustomBgUpload(image: string | null) {
+  if (image && image === store.customBackgroundImage) {
+    store.customBackgroundImage = null
+  }
+  store.customBackgroundImage = image
+}
+
+function onNavbarOverlayActive(active: boolean) {
+  navbarOverlayActive.value = active
 }
 
 watchEffect(() => {

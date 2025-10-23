@@ -36,5 +36,6 @@ export const useCharacterStore = defineStore('characterStore', {
     backgroundColor: '#1f2937',
     useCurrentCamera: false,
     showDatingBg: true,
+    customBackgroundImage: null as string | null,
   }),
 })

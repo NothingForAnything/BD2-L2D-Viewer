@@ -4,14 +4,32 @@
     <nav class="flex items-center justify-between bg-black text-white p-4">
       <div class="text-xl md:text-3xl font-bold">Brown Dust 2 L2D Viewer</div>
       <div class="hidden md:flex items-center gap-4">
-        <button class="cursor-pointer" @click="showUploadModal = true">
+        <button class="cursor-pointer" @click="showUploadModal = true" title="Upload custom Spine model">
           <PlusIcon class="w-5 h-5 md:w-7 md:h-7" />
+        </button>
+        <button
+          class="cursor-pointer"
+          @click="openBackgroundModal(false)"
+          aria-label="Upload background"
+          title="Upload background image"
+        >
+          <BgUploadIcon class="w-5 h-5 md:w-7 md:h-7" />
+        </button>
+        <button
+          v-if="hasCustomBackground"
+          class="cursor-pointer opacity-70 hover:opacity-100 transition"
+          @click="resetBackground"
+          aria-label="Reset background"
+          title="Reset background image"
+        >
+          <BgResetIcon class="w-5 h-5 md:w-7 md:h-7" />
         </button>
         <a
           href="https://ko-fi.com/jelosus1"
           target="_blank"
           rel="noopener"
           class="relative"
+          title="Support on Ko-fi"
         >
           <KoFiIcon class="w-5 h-5 md:w-7 md:h-7" />
           <div
@@ -25,10 +43,10 @@
             <span class="absolute left-1/2 -top-2 -translate-x-1/2 border-4 border-transparent border-b-white"></span>
           </div>
         </a>
-        <button class="cursor-pointer" @click="showChangelog = true">
+        <button class="cursor-pointer" @click="showChangelog = true" title="Changelog">
           <ChangelogIcon class="w-5 h-5 md:w-7 md:h-7" />
         </button>
-        <a href="https://github.com/Jelosus2/BD2-L2D-Viewer" target="_blank">
+        <a href="https://github.com/Jelosus2/BD2-L2D-Viewer" target="_blank" title="Open GitHub repository">
           <GithubIcon class="w-5 h-5 md:w-7 md:h-7" />
         </a>
       </div>
@@ -63,6 +81,21 @@
         >
           <PlusIcon class="w-5 h-5" />
           <span>Upload</span>
+        </button>
+        <button
+          class="flex items-center gap-2"
+          @click="openBackgroundModal(true)"
+        >
+          <BgUploadIcon class="w-5 h-5" />
+          <span>Upload Background</span>
+        </button>
+        <button
+          v-if="hasCustomBackground"
+          class="flex items-center gap-2"
+          @click="() => { resetBackground(); closeMobileMenu(); }"
+        >
+          <BgResetIcon class="w-5 h-5 opacity-60" />
+          <span>Reset Background</span>
         </button>
         <button
           class="flex items-center gap-2"
@@ -104,70 +137,143 @@
 
     <UploadSpineModal v-if="showUploadModal" @close="showUploadModal = false" />
     <ChangelogModal v-if="showChangelog" @close="showChangelog = false" />
+    <UploadBackgroundModal
+      v-if="showBackgroundModal"
+      :show-reset="hasCustomBackground"
+      @close="showBackgroundModal = false"
+      @upload-bg="handleBackgroundUpload"
+      @reset-bg="handleBackgroundReset"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import ChangelogModal from '@/components/ChangelogModal.vue';
-import UploadSpineModal from '@/components/UploadSpineModal.vue';
+import { ref, onMounted, computed, watch } from 'vue'
+import ChangelogModal from '@/components/ChangelogModal.vue'
+import UploadSpineModal from '@/components/UploadSpineModal.vue'
+import UploadBackgroundModal from '@/components/UploadBackgroundModal.vue'
 
-import GithubIcon from '@/components/icons/GithubIcon.vue';
-import ChangelogIcon from '@/components/icons/ChangelogIcon.vue';
-import PlusIcon from '@/components/icons/PlusIcon.vue';
-import MenuIcon from '@/components/icons/MenuIcon.vue';
-import KoFiIcon from '@/components/icons/KoFiIcon.vue';
+import GithubIcon from '@/components/icons/GithubIcon.vue'
+import ChangelogIcon from '@/components/icons/ChangelogIcon.vue'
+import PlusIcon from '@/components/icons/PlusIcon.vue'
+import MenuIcon from '@/components/icons/MenuIcon.vue'
+import KoFiIcon from '@/components/icons/KoFiIcon.vue'
+import BgUploadIcon from '@/components/icons/BgUploadIcon.vue'
+import BgResetIcon from '@/components/icons/BgResetIcon.vue'
 
-const showChangelog = ref(false);
-const showUploadModal = ref(false);
-const showKofiTooltip = ref(false);
-const kofiTooltipHidden = ref(false);
-const mobileMenuOpen = ref(false);
-const mobileMenu = ref<HTMLElement | null>(null);
-const showMobileKofiTip = ref(false);
-const mobileKofiTipHidden = ref(false);
+const props = defineProps<{ hasCustomBackground?: boolean }>()
+const hasCustomBackground = computed(() => !!props.hasCustomBackground)
 
-let mobileTipTimer: number | undefined;
-let mobileTipHideTimer: number | undefined;
+const showChangelog = ref(false)
+const showUploadModal = ref(false)
+const showBackgroundModal = ref(false)
+const showKofiTooltip = ref(false)
+const kofiTooltipHidden = ref(false)
+const mobileMenuOpen = ref(false)
+const mobileMenu = ref<HTMLElement | null>(null)
+const showMobileKofiTip = ref(false)
+const mobileKofiTipHidden = ref(false)
+let closeMenuAfterBgUpload = false
+
+let mobileTipTimer: number | undefined
+let mobileTipHideTimer: number | undefined
+
+const emit = defineEmits<{
+  (e: 'mobile-menu', open: boolean): void
+  (e: 'upload-bg', dataUrl: string | null): void
+  (e: 'overlay-active', active: boolean): void
+}>()
 
 const openMobileMenu = () => {
-  mobileMenuOpen.value = true;
+  mobileMenuOpen.value = true
+  emit('mobile-menu', true)
   if (!localStorage.getItem('kofiPromptSeen') && !mobileTipTimer) {
-    showMobileKofiTip.value = true;
+    showMobileKofiTip.value = true
     mobileTipTimer = window.setTimeout(() => {
-      mobileKofiTipHidden.value = true;
+      mobileKofiTipHidden.value = true
       mobileTipHideTimer = window.setTimeout(() => {
-        showMobileKofiTip.value = false;
-        localStorage.setItem('kofiPromptSeen', '1');
-      }, 500);
-    }, 5000);
+        showMobileKofiTip.value = false
+        localStorage.setItem('kofiPromptSeen', '1')
+      }, 500)
+    }, 5000)
   }
-};
+}
 
 const closeMobileMenu = () => {
-  mobileMenuOpen.value = false;
+  mobileMenuOpen.value = false
+  emit('mobile-menu', false)
   if (mobileTipTimer) {
-    clearTimeout(mobileTipTimer);
-    mobileTipTimer = undefined;
+    clearTimeout(mobileTipTimer)
+    mobileTipTimer = undefined
   }
   if (mobileTipHideTimer) {
-    clearTimeout(mobileTipHideTimer);
-    mobileTipHideTimer = undefined;
+    clearTimeout(mobileTipHideTimer)
+    mobileTipHideTimer = undefined
   }
-  mobileKofiTipHidden.value = false;
-  showMobileKofiTip.value = false;
-};
+  mobileKofiTipHidden.value = false
+  showMobileKofiTip.value = false
+}
+
+const openBackgroundModal = (fromMobile: boolean) => {
+  closeMenuAfterBgUpload = fromMobile
+  if (fromMobile && mobileMenuOpen.value) {
+    closeMobileMenu()
+  }
+  showBackgroundModal.value = true
+}
+
+const resetBackground = () => {
+  closeMenuAfterBgUpload = false
+  emit('upload-bg', null)
+  showBackgroundModal.value = false
+  if (mobileMenuOpen.value) {
+    closeMobileMenu()
+  }
+}
+
+const handleBackgroundUpload = (dataUrl: string | null) => {
+  if (dataUrl) {
+    emit('upload-bg', dataUrl)
+  }
+  if (closeMenuAfterBgUpload && mobileMenuOpen.value) {
+    closeMobileMenu()
+  }
+  closeMenuAfterBgUpload = false
+  showBackgroundModal.value = false
+}
+
+const handleBackgroundReset = () => {
+  closeMenuAfterBgUpload = false
+  emit('upload-bg', null)
+  showBackgroundModal.value = false
+}
+
+watch(
+  [showChangelog, showUploadModal, showBackgroundModal],
+  () => {
+    const active = showChangelog.value || showUploadModal.value || showBackgroundModal.value
+    emit('overlay-active', active)
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
   if (!localStorage.getItem('kofiPromptSeen') && !window.matchMedia('(max-width: 767px)').matches) {
-    showKofiTooltip.value = true;
+    showKofiTooltip.value = true
     setTimeout(() => {
-      kofiTooltipHidden.value = true;
+      kofiTooltipHidden.value = true
       setTimeout(() => {
-        showKofiTooltip.value = false;
-        localStorage.setItem('kofiPromptSeen', '1');
-      }, 500);
-    }, 5000);
+        showKofiTooltip.value = false
+        localStorage.setItem('kofiPromptSeen', '1')
+      }, 500)
+    }, 5000)
   }
-});
+})
 </script>
+
+
+
+
+
+
+

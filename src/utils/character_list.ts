@@ -659,6 +659,13 @@ export default {
     "cutscene": "cutscene_char003901",
     "dating": ""
   },
+  "003902": {
+    "charName": "Sonya",
+    "costumeName": "Little Pumpkin Girl",
+    "spine": "char003902",
+    "cutscene": "cutscene_char003902",
+    "dating": ""
+  },
   "004001": {
     "charName": "Darian",
     "costumeName": "Prophetic Dream",
@@ -979,7 +986,7 @@ export default {
     "costumeName": "Neon Savior",
     "spine": "char066403",
     "cutscene": "cutscene_char066403",
-    "dating": ""
+    "dating": "illust_dating10"
   },
   "066801": {
     "charName": "Refithea",
@@ -1049,6 +1056,13 @@ export default {
     "costumeName": "Comeback Idol",
     "spine": "char067102",
     "cutscene": "cutscene_char067102",
+    "dating": ""
+  },
+  "067103": {
+    "charName": "Granhildr",
+    "costumeName": "Boo Ghost",
+    "spine": "char067103",
+    "cutscene": "cutscene_char067103",
     "dating": ""
   },
   "067201": {
