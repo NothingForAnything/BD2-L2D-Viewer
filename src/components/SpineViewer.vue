@@ -1031,6 +1031,8 @@ function exportAnimation(transparent: boolean): Promise<void> {
 
     const prevPos = new Vector2(cam.position.x, cam.position.y)
     const prevZoom = cam.zoom
+    const state = p.animationState
+    const skeleton = p.skeleton
 
     if (!store.useCurrentCamera) {
       cam.position.x = defaultCameraPos.x
@@ -1094,12 +1096,22 @@ function exportAnimation(transparent: boolean): Promise<void> {
 
     const animName = store.selectedAnimation
     let duration = 3
-    if (animName && p.animationState) {
-      const anim = p.animationState.data.skeletonData.animations.find(
+    if (animName && state) {
+      const anim = state.data.skeletonData.animations.find(
         (a: Animation) => a.name === animName,
       )
       if (anim) duration = anim.duration
-      p.setAnimation(animName, true)
+      state.clearTrack(0)
+      const entry = p.setAnimation(animName, true)
+      if (entry) {
+        entry.mixDuration = 0
+        entry.mixTime = 0
+      }
+      if (skeleton) {
+        state.apply(skeleton)
+        skeleton.updateWorldTransform()
+        ;(p as unknown as SpinePlayerInternal).drawFrame(false)
+      }
     }
 
     const recordDuration = duration / (p.speed || store.animationSpeed || 1)
@@ -1162,14 +1174,23 @@ function exportAnimationFrames(transparent: boolean): Promise<void> {
 
     const animName = store.selectedAnimation
     let duration = 3
-    if (animName && p.animationState) {
-      const anim = p.animationState.data.skeletonData.animations.find(
+    const state = p.animationState
+    const skeleton = p.skeleton
+    if (animName && state) {
+      const anim = state.data.skeletonData.animations.find(
         (a: Animation) => a.name === animName,
       )
       if (anim) duration = anim.duration
-      p.setAnimation(animName, false)
-      p.animationState?.apply(p.skeleton!)
-      p.skeleton!.updateWorldTransform()
+      state.clearTrack(0)
+      const entry = p.setAnimation(animName, false)
+      if (entry) {
+        entry.mixDuration = 0
+        entry.mixTime = 0
+      }
+      if (skeleton) {
+        state.apply(skeleton)
+        skeleton.updateWorldTransform()
+      }
     }
 
     const speed = p.speed || store.animationSpeed || 1

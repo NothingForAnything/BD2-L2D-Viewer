@@ -1,5 +1,15 @@
 export default [
   {
+    "date": "20/11/2025",
+    "changes": [
+      "Added Olivier: Faithful Wings character icon.",
+      "Added Olivier: Faithful Wings standing and ultimate animations.",
+      "Renamed Olivier: White Witch ➔ Olivier: Faithful Wings.",
+      "Fixed first couple of frames in animation exports starting in reverse.",
+      "As always, if you like my work and want to support me so I can keep working on adding more features and improving the site you can do so by clicking in the coffee icon in the navigation bar."
+    ]
+  },
+  {
     "date": "23/10/2025",
     "changes": [
       "Added the long awaited ability to upload a custom background image and be able to edit it!",

@@ -598,9 +598,9 @@ export default {
   },
   "003601": {
     "charName": "Olivier",
-    "costumeName": "White Witch",
+    "costumeName": "Faithful Wings",
     "spine": "char003601",
-    "cutscene": "",
+    "cutscene": "cutscene_char003601",
     "dating": ""
   },
   "003602": {
